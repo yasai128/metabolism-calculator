@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基礎代謝＆活動代謝シミュレーター | ダイエット計算機</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+        
+        .notice {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #e74c3c;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .controls {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+        
+        .control-group {
+            margin-bottom: 25px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1em;
+        }
+        
+        .gender-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .gender-option {
+            position: relative;
+        }
+        
+        .gender-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+        
+        .gender-option label {
+            display: block;
+            padding: 20px;
+            background: #f8f9fa;
+            border: 3px solid #ddd;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+        
+        .gender-option input[type="radio"]:checked + label {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            transform: scale(1.05);
+        }
+        
+        .gender-option label:hover {
+            border-color: #667eea;
+        }
+        
+        .slider-container {
+            position: relative;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            border: none;
+        }
+        
+        .current-value {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-top: 10px;
+        }
+        
+        .activity-options {
+            display: grid;
+            gap: 10px;
+        }
+        
+        .activity-option {
+            position: relative;
+        }
+        
+        .activity-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+        
+        .activity-option label {
+            display: block;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border: 3px solid #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .activity-option label small {
+            display: block;
+            font-weight: normal;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .activity-option input[type="radio"]:checked + label {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .activity-option input[type="radio"]:checked + label small {
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .activity-option label:hover {
+            border-color: #667eea;
+        }
+        
+        .results {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .result-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .result-card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+            font-size: 1.5em;
+        }
+        
+        .metabolism-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .metabolism-item {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            color: white;
+        }
+        
+        .metabolism-label {
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        
+        .metabolism-value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+        
+        .goal-grid {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .goal-item {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .goal-item.recommended {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            border-left-color: #f39c12;
+        }
+        
+        .goal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .goal-name {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        .goal-badge {
+            background: #f39c12;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        
+        .goal-calories {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 10px 0;
+        }
+        
+        .goal-item.recommended .goal-calories {
+            color: #d35400;
+        }
+        
+        .goal-loss {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .macro-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        
+        .macro-item {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .macro-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .macro-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .macro-calories {
+            font-size: 0.85em;
+            color: #999;
+            margin-top: 5px;
+        }
+        
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .metabolism-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .macro-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔥 基礎代謝＆活動代謝シミュレーター</h1>
+            <p>あなたの1日の消費カロリーを計算しよう！</p>
+        </div>
+        
+        <div class="notice">
+            ※計算結果は目安です。個人差があるため、実際の体重変化を見ながら調整してください。
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>性別を選択</label>
+                <div class="gender-options">
+                    <div class="gender-option">
+                        <input type="radio" name="gender" id="male" value="male" checked>
+                        <label for="male">👨 男性</label>
+                    </div>
+                    <div class="gender-option">
+                        <input type="radio" name="gender" id="female" value="female">
+                        <label for="female">👩 女性</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label for="height">身長</label>
+                <div class="slider-container">
+                    <input type="range" id="height" min="140" max="200" step="1" value="170">
+                    <div class="current-value">
+                        <span id="heightValue">170</span>cm
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label for="weight">体重</label>
+                <div class="slider-container">
+                    <input type="range" id="weight" min="40" max="120" step="1" value="70">
+                    <div class="current-value">
+                        <span id="weightValue">70</span>kg
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label for="age">年齢</label>
+                <div class="slider-container">
+                    <input type="range" id="age" min="18" max="80" step="1" value="30">
+                    <div class="current-value">
+                        <span id="ageValue">30</span>歳
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label>活動レベルを選択</label>
+                <div class="activity-options">
+                    <div class="activity-option">
+                        <input type="radio" name="activity" id="activity1" value="1.2" checked>
+                        <label for="activity1">
+                            ほぼ運動しない
+                            <small>デスクワーク中心、ほとんど座っている</small>
+                        </label>
+                    </div>
+                    <div class="activity-option">
+                        <input type="radio" name="activity" id="activity2" value="1.375">
+                        <label for="activity2">
+                            軽い運動
+                            <small>週1〜3回の軽い運動や散歩</small>
+                        </label>
+                    </div>
+                    <div class="activity-option">
+                        <input type="radio" name="activity" id="activity3" value="1.55">
+                        <label for="activity3">
+                            中程度の運動
+                            <small>週3〜5回の運動、ジム通い</small>
+                        </label>
+                    </div>
+                    <div class="activity-option">
+                        <input type="radio" name="activity" id="activity4" value="1.725">
+                        <label for="activity4">
+                            激しい運動
+                            <small>週6〜7回の激しい運動</small>
+                        </label>
+                    </div>
+                    <div class="activity-option">
+                        <input type="radio" name="activity" id="activity5" value="1.9">
+                        <label for="activity5">
+                            非常に激しい運動
+                            <small>1日2回の運動、肉体労働など</small>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="results" id="results">
+            <div class="result-card">
+                <h2>📊 あなたの代謝量</h2>
+                <div class="metabolism-grid">
+                    <div class="metabolism-item">
+                        <div class="metabolism-label">基礎代謝（BMR）</div>
+                        <div class="metabolism-value"><span id="bmr">0</span> kcal</div>
+                    </div>
+                    <div class="metabolism-item">
+                        <div class="metabolism-label">活動代謝（TDEE）</div>
+                        <div class="metabolism-value"><span id="tdee">0</span> kcal</div>
+                    </div>
+                </div>
+                <p style="margin-top: 15px; color: #666; font-size: 0.9em;">
+                    基礎代謝は何もしなくても消費するカロリー。活動代謝は日常生活を含めた1日の総消費カロリーです。
+                </p>
+            </div>
+            
+            <div class="result-card">
+                <h2>🎯 減量目標カロリー</h2>
+                <div class="goal-grid">
+                    <div class="goal-item">
+                        <div class="goal-header">
+                            <span class="goal-name">緩やか（-300kcal/日）</span>
+                        </div>
+                        <div class="goal-calories"><span id="goal1">0</span> kcal/日</div>
+                        <div class="goal-loss">月に約 <strong>1.2kg</strong> 減</div>
+                    </div>
+                    
+                    <div class="goal-item recommended">
+                        <div class="goal-header">
+                            <span class="goal-name">標準（-500kcal/日）</span>
+                            <span class="goal-badge">おすすめ</span>
+                        </div>
+                        <div class="goal-calories"><span id="goal2">0</span> kcal/日</div>
+                        <div class="goal-loss">月に約 <strong>2kg</strong> 減</div>
+                    </div>
+                    
+                    <div class="goal-item">
+                        <div class="goal-header">
+                            <span class="goal-name">急速（-1000kcal/日）</span>
+                        </div>
+                        <div class="goal-calories"><span id="goal3">0</span> kcal/日</div>
+                        <div class="goal-loss">月に約 <strong>4kg</strong> 減 <small>※無理は禁物</small></div>
+                    </div>
+                </div>
+                <p style="margin-top: 15px; color: #666; font-size: 0.9em;">
+                    標準ペース（-500kcal）が最もバランスが良く、筋肉を維持しながら減量できます。
+                </p>
+            </div>
+            
+            <div class="result-card">
+                <h2>🍽️ 推奨マクロ栄養素（標準ペース基準）</h2>
+                <div class="macro-grid">
+                    <div class="macro-item">
+                        <div class="macro-label">タンパク質</div>
+                        <div class="macro-value"><span id="protein">0</span>g</div>
+                        <div class="macro-calories"><span id="proteinCal">0</span> kcal</div>
+                    </div>
+                    <div class="macro-item">
+                        <div class="macro-label">脂質</div>
+                        <div class="macro-value"><span id="fat">0</span>g</div>
+                        <div class="macro-calories"><span id="fatCal">0</span> kcal</div>
+                    </div>
+                    <div class="macro-item">
+                        <div class="macro-label">炭水化物</div>
+                        <div class="macro-value"><span id="carb">0</span>g</div>
+                        <div class="macro-calories"><span id="carbCal">0</span> kcal</div>
+                    </div>
+                </div>
+                <p style="margin-top: 15px; color: #666; font-size: 0.9em;">
+                    タンパク質は体重×2g、脂質は総カロリーの25%、残りが炭水化物です。
+                </p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>使い方</strong></p>
+            <p>1. 性別・身長・体重・年齢を入力</p>
+            <p>2. 活動レベルを選択</p>
+            <p>3. あなたの代謝量と減量目標カロリーが表示されます</p>
+            <p style="margin-top: 15px; font-size: 0.9em;">
+                この計算結果を基に、MyFitnessPalなどのアプリでカロリー管理を始めましょう。
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        function formatNumber(num) {
+            return Math.round(num).toLocaleString('ja-JP');
+        }
+        
+        function calculateBMR(gender, weight, height, age) {
+            if (gender === 'male') {
+                return 13.397 * weight + 4.799 * height - 5.677 * age + 88.362;
+            } else {
+                return 9.247 * weight + 3.098 * height - 4.330 * age + 447.593;
+            }
+        }
+        
+        function updateResults() {
+            const gender = document.querySelector('input[name="gender"]:checked').value;
+            const height = parseInt(document.getElementById('height').value);
+            const weight = parseInt(document.getElementById('weight').value);
+            const age = parseInt(document.getElementById('age').value);
+            const activity = parseFloat(document.querySelector('input[name="activity"]:checked').value);
+            
+            // 基礎代謝（BMR）計算
+            const bmr = calculateBMR(gender, weight, height, age);
+            
+            // 活動代謝（TDEE）計算
+            const tdee = bmr * activity;
+            
+            // 減量目標カロリー
+            const goal1 = tdee - 300;  // 緩やか
+            const goal2 = tdee - 500;  // 標準
+            const goal3 = tdee - 1000; // 急速
+            
+            // マクロ栄養素計算（標準ペース基準）
+            const protein = weight * 2;  // g
+            const proteinCal = protein * 4;  // kcal
+            
+            const fatCal = goal2 * 0.25;  // kcal
+            const fat = fatCal / 9;  // g
+            
+            const carbCal = goal2 - proteinCal - fatCal;  // kcal
+            const carb = carbCal / 4;  // g
+            
+            // 表示更新
+            document.getElementById('bmr').textContent = formatNumber(bmr);
+            document.getElementById('tdee').textContent = formatNumber(tdee);
+            
+            document.getElementById('goal1').textContent = formatNumber(goal1);
+            document.getElementById('goal2').textContent = formatNumber(goal2);
+            document.getElementById('goal3').textContent = formatNumber(goal3);
+            
+            document.getElementById('protein').textContent = formatNumber(protein);
+            document.getElementById('proteinCal').textContent = formatNumber(proteinCal);
+            
+            document.getElementById('fat').textContent = formatNumber(fat);
+            document.getElementById('fatCal').textContent = formatNumber(fatCal);
+            
+            document.getElementById('carb').textContent = formatNumber(carb);
+            document.getElementById('carbCal').textContent = formatNumber(carbCal);
+        }
+        
+        // イベントリスナー
+        document.getElementById('height').addEventListener('input', function() {
+            document.getElementById('heightValue').textContent = this.value;
+            updateResults();
+        });
+        
+        document.getElementById('weight').addEventListener('input', function() {
+            document.getElementById('weightValue').textContent = this.value;
+            updateResults();
+        });
+        
+        document.getElementById('age').addEventListener('input', function() {
+            document.getElementById('ageValue').textContent = this.value;
+            updateResults();
+        });
+        
+        document.querySelectorAll('input[name="gender"]').forEach(radio => {
+            radio.addEventListener('change', updateResults);
+        });
+        
+        document.querySelectorAll('input[name="activity"]').forEach(radio => {
+            radio.addEventListener('change', updateResults);
+        });
+        
+        // 初期表示
+        updateResults();
+    </script>
+</body>
+</html>
